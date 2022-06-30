@@ -19,22 +19,16 @@ window.onload = function () {
     let score = 0;
     var playerSize = 50;
     var multiplier = 5;
-    var dif = 1;
-    var difDisplay = 1;
     var game = 1;
     var vida = 100;
-    var enemVida = 100;
     var sprite = 0;
     var mortes = 0;
     var cloudNum = 0;
-
-
-
-
-    //Spawn do pimeiro inimigo
-    var enemX = Math.random() * (600-50);
-	var enemY = Math.random() * (400-50);
-
+    var totalClouds = 10;
+    var totalEnemies = 5;
+    var totalLevels = 10;
+    var levelNumber = 1;
+    var holder = 5;
 
     //Testa se o personagem principal está perto do inimigo
     function onRange(x1, y1, playerSize, playerSize, x2, y2, w2, h2){
@@ -55,57 +49,58 @@ window.onload = function () {
     }
 
 
-    
+    //Transforma o input X em qualquer número entre 0 e X
+    function randy(x){
+        result = Math.floor(x*Math.random());
+        return result;
+    }
+
+    //Pequena função para simular 50% de probabilidade
+    function coinFlip(){
+        if(randy(100) < 50){
+            return true;
+        }else{
+            return false;
+        }
+    }
+        
 
 
+    //Coisas de nuvem
 
     const cloudX = [];
     const cloudY = [];
     const size = [];
     const nuvSpeed = [];
 
-
-
-    for( i = 0; i < 5; i++){
-        randomize(i);
+    for( i = 0; i < totalClouds; i++){
+        randomizeCloud(i);
     }
 
-    function randomize(id){
-        cloudX[id] = -200 + Math.random()*5;
+    function randomizeCloud(id){
+        cloudX[id] = -200 + Math.random()*50;
         cloudY[id] = Math.random()*500;
         size[id] = 30 + 10*Math.random();
         nuvSpeed[id] = 2 + 5*Math.random();
 
     }
 
-
     function cloudManager(){
-        handleCloud(0);
-        handleCloud(1);
-        handleCloud(2);
-        handleCloud(3);
-        handleCloud(4);
-
+        for( i = 0; i < totalClouds; i++){
+            handleCloud(i);   
+        }
     }
-
 
     function handleCloud(id){
         if(cloudX[id]>500){
-            randomize(id);
+            randomizeCloud(id);
         }
-
-        
         drawCloud(cloudX[id], cloudY[id], size[id]);
         cloudX[id] += nuvSpeed[id];
-        
-
     }
 
     function drawCloud(x,y, size){
-
-
         dist = x+size;
-
         context.beginPath();
         context.fillStyle="#ffffff";
         context.arc(dist, y+5, size, 0, 2 * Math.PI);
@@ -116,106 +111,112 @@ window.onload = function () {
         context.fill();
 
     }
+    /*************************************/
 
-    function handleEnemy(){
+    //Coisas de inimigo
 
+    var enemX = [];
+    var enemY = [];
+    var enemSize = [];
+    var enemSpeed = [];
+    var enemVida = [];
+    var enemAlive = [];
 
-        if(enemX < x+25){
-            enemX += dif;
+    function moooooooore(){
+        for( i = 0; i < totalEnemies; i++){
+            randomizeEnemy(i);
         }
-        if(enemX > x+25){
-            enemX -= dif;
+    }
+
+    moooooooore();
+
+    function randomizeEnemy(id){
+        if(coinFlip()){
+            enemX[id] =  500 + randy(200);
+        }else{
+            enemX[id] =  0 - randy(200);
         }
-        if(enemY < y+25){
-            enemY += dif;
+        if(coinFlip()){
+            enemY[id] =  500 + randy(200);
+        }else{
+            enemY[id] =  0 - randy(200);
         }
-        if(enemY > y+25){
-            enemY -= dif;
-        }
-
-
-
-        if (onRange(x, y, playerSize, playerSize, enemX, enemY, 10, 10) == 1){
-            
-            context.beginPath();
-            context.moveTo(x + 13, y + 20);
-            context.lineTo(enemX, enemY);
-            context.moveTo(x + 38, y + 20);
-            context.lineTo(enemX, enemY);
-            context.lineWidth = 5;
-            context.strokeStyle = 'red';
-            context.stroke();
-
         
 
-            if(testacolisao(x, y, 50, 50, enemX, enemY, 10, 10) == 1){
-                score--;
-                if(vida > 0){
-                    //vida --;
-                } 
+        enemSize[id] = 8 + 4*Math.random();
+        enemSpeed[id] = 1;
+        enemVida[id] = 100;
+        enemAlive[id] = true;
+    }
+
+    function enemManager(){
+        for( i = 0; i < holder; i++){
+            handleEnemy(i);   
+        }
+    }
+
+    function handleEnemy(id){
+
+        if(enemAlive[i] == true){
+            drawEnemy(enemX[id], enemY[id], enemSize[id]);
+
+            if(enemX[id] < x+25){
+                enemX[id] += enemSpeed[id];
+            }
+            if(enemX[id] > x+25){
+                enemX[id] -= enemSpeed[id];
+            }
+            if(enemY[id] < y+25){
+                enemY[id] += enemSpeed[id];
+            }
+            if(enemY[id] > y+25){
+                enemY[id] -= enemSpeed[id];
             }
 
+            if (onRange(x, y, playerSize, playerSize, enemX[id], enemY[id], enemSize[id], enemSize[id]) == 1){
+                enemVida[id]--;
+                context.beginPath();
+                context.moveTo(x + 13, y + 20);
+                context.lineTo(enemX[id], enemY[id]);
+                context.moveTo(x + 38, y + 20);
+                context.lineTo(enemX[id], enemY[id]);
+                context.lineWidth = 5;
+                context.strokeStyle = 'red';
+                context.stroke();
 
-
-            enemVida--;
-        }
-
-        drawEnemy(enemX, enemY);
-
-
-        if (enemVida < 0){
             
-            score += 500;
-            mortes += 1;
-            enemVida = 100;
-            enemX = Math.random() * (600-50);
-	        enemY = Math.random() * (400-50);
+
+                if(testacolisao(x, y, 50, 50, enemX[id], enemY[id], 10, 10) == 1){
+                    score--;
+                    if(vida > 0){
+                        vida --;
+                    } 
+                }
+            }
+
+            if (enemVida[id] == 0){
+                enemAlive[id] = false;
+                score += 500;
+                mortes += 1;
+                totalEnemies--;
+                enemSpeed[id] = 0;
+            }
         }
-    }
-
-
-    //Mostra um valor para fim de testes
-    function test(valname, pos, val){
-        context.font = '25px Arial';
-        context.fillStyle = 'black';
-        context.fillText(valname +": " + val, 20, 60 + pos*30);
-    }
-
-    //Testa se algo (1) colidiu com outra coisa (2)
-    function testacolisao(x1, y1, w1, h1, x2, y2, w2, h2) {
-        if (x1 < x2 + w2  && x1 + w1 > x2 && y1 < y2 + h2 && h1 + y1 > y2){
-             return 1;
+        else{
+            enemVida[id] = 100;
+            enemX[id] = 10;
+            enemY[id] = 10;
         }
+        
     }
 
-    //Mostra a tela final do jogo
-    function telaFinal(){
-        context.clearRect(0, 0, 500, 500);
-        context.fillStyle = "black";
-        context.fillRect(0, 0, 500, 500);
-        context.fillStyle = 'white';
-        context.font = '50px serif';
-        context.fillText("Fim de jogo",120, 150);
-        context.font = '25px Arial';
-        context.fillText("Pontos: " + score, 170, 250);
-        context.fillText("Dificuldade: " + difDisplay, 170, 280);
-        context.fillText("Mortes: " + mortes, 170, 310);
-    }
-    
-    //Mostra a vida total do personagem
-    function drawVida(vida) {
-        context.fillStyle = "red";
-        context.fillRect(260, 10, 200, 25);
-        context.fillStyle = "green";
-        context.fillRect(260, 10, vida*2, 25);
-    }
-    function drawEnemy(x, y) {
+    function drawEnemy(x, y, size) {
         context.beginPath();
         context.fillStyle="#ff0000";
-        context.arc(x, y, 10, 0, 2 * Math.PI);
+        context.arc(x, y, size, 0, 2 * Math.PI);
         context.fill();
         
-        sprite++;
+        
         if((sprite/2)%2 == 1){
             context.fillRect(x+3, y-8, 15, 3);
             context.fillRect(x+3, y -2, 15, 3);
@@ -236,6 +237,100 @@ window.onload = function () {
         context.fill(); 
         
     }
+
+
+    /************************************/
+    
+
+
+    //Mostra uma variável no menu
+    function menu(valname, pos, val){
+        context.font = '25px Arial';
+        context.fillStyle = 'black';
+        context.fillText(valname +": " + val, 20, 30 + pos*30);
+    }
+
+    function drawLevel(levelNumber){
+        var gradientRect = context.createLinearGradient(0, 0, canvas.width, 0);
+            rot = (levelNumber)/totalLevels;
+        
+        gradientRect.addColorStop( rot, "black");
+        gradientRect.addColorStop(0.5, "white");
+        gradientRect.addColorStop(1 - rot, "black");
+        
+        
+        var gradientLetter = context.createLinearGradient(160, 0, 320, 0);
+        gradientLetter.addColorStop(0, "green");
+        gradientLetter.addColorStop(0.5, "green");
+        gradientLetter.addColorStop(1, "green");
+
+        context.font = '50px Verdana';
+        if(levelNumber == 1){
+            context.fillStyle = "white";
+        }else{
+            context.fillStyle = gradientRect;
+        }
+
+        
+        context.fillRect(110, 140, 270, 80);
+
+        
+
+        context.fillStyle = gradientLetter;
+        context.fillText("LEVEL " + levelNumber, 140, 200);
+    }
+
+
+    //Gerencia níveis
+    function levelManager(){
+        if(totalEnemies == holder){
+            drawLevel(levelNumber);
+        }
+        if(totalEnemies == 0){
+            holder+=5;
+            totalEnemies = holder;
+            levelNumber++;
+            moooooooore();
+        }
+
+    }
+
+    //Testa se algo (1) colidiu com outra coisa (2)
+    function testacolisao(x1, y1, w1, h1, x2, y2, w2, h2) {
+        if (x1 < x2 + w2  && x1 + w1 > x2 && y1 < y2 + h2 && h1 + y1 > y2){
+             return 1;
+        }
+    }
+
+
+
+    //Mostra a tela final do jogo
+    function telaFinal(){
+
+        context.clearRect(0, 0, 500, 500);
+        context.fillStyle = "black";
+        context.fillRect(0, 0, 500, 500);
+        context.fillStyle = 'white';
+        context.font = '50px serif';
+        if(totalLevels == levelNumber){
+            context.fillText("Você venceu!",120, 150);
+        }else{
+            context.fillText("Você perdeu!",120, 150);
+        }
+        
+        context.font = '25px Arial';
+        context.fillText("Pontos: " + score, 170, 250);
+        context.fillText("Inimigos mortos: " + mortes, 170, 280);
+    }
+    
+    //Mostra a vida total do personagem
+    function drawVida(vida) {
+        context.fillStyle = "red";
+        context.fillRect(260, 10, 200, 25);
+        context.fillStyle = "green";
+        context.fillRect(260, 10, vida*2, 25);
+    }
+    
 
     //Funções para desenhar o personagem
 
@@ -348,7 +443,7 @@ window.onload = function () {
         dir = 0; 
     }
 
-    //Movimenta o persongaem (Touchscreen)
+    //Movimenta o personagem (Touchscreen)
     up.ontouchstart = function () { 
         dir = "up";
         console.log("a");
@@ -378,26 +473,28 @@ window.onload = function () {
     //Loop do jogo
     function draw() {
         context.clearRect(0, 0, 500, 500);
+        
+        
+        cloudManager();
+        enemManager();
+        levelManager();
+
         drawVida(vida);
 
-        cloudManager();
+        menu("Vida", 0, vida);
+        menu("Pontos", 1, score);
+        menu("Nível", 2, levelNumber);
 
+        //menu("OnRange", 3, onRange(x, y, playerSize, playerSize, enemX, enemY, 10, 10));
+        //menu("enemX", 4, enemX);
+        //menu("enemY", 5, enemY);
+        //menu("totalEnemies", 6, totalEnemies);
+        //menu("enemVida", 8,  enemVida);
+       
         
 
-        context.font = '25px Arial';
-        context.fillStyle = 'black';
-        context.fillText("Pontos: " + score, 20, 30);
-        context.fillText("Dificuldade: " + difDisplay, 20, 60);
-        context.fillText("Vida:", 200, 30);
 
-
-            dif = score/600 + 2;
-            difDisplay = mortes;
-
-        ;
-
-        test("OnRange", 1, onRange(x, y, playerSize, playerSize, enemX, enemY, 10, 10));
-        test("Vida inimigo", 2, enemVida);
+        
 
         
 
@@ -431,18 +528,17 @@ window.onload = function () {
         }
         
 
-        //handleEnemy();
         
-        if(vida == 0){
+        if(vida == 0 || levelNumber == totalLevels){
             clearInterval(jogo);
             telaFinal();
         }
 
-        
+        sprite++;
 
 
     }  
-        jogo = setInterval(draw, 50);
+        jogo = setInterval(draw, 40);
 
         
 
