@@ -23,6 +23,7 @@ window.onload = function () {
     var multiplier = 5;
     var game = 1;
     var vida = 100;
+    var vidaInimigo = 50;
     var sprite = 0;
     var mortes = 0;
     var cloudNum = 0;
@@ -134,20 +135,20 @@ window.onload = function () {
 
     function randomizeEnemy(id){
         if(coinFlip()){
-            enemX[id] =  250 + randy(200);
+            enemX[id] =  350 + randy(200);
         }else{
             enemX[id] =  0 - randy(200);
         }
         if(coinFlip()){
-            enemY[id] =  250 + randy(200);
+            enemY[id] =  540 + randy(200);
         }else{
             enemY[id] =  0 - randy(200);
         }
         
 
-        enemSize[id] = 8 + 4*Math.random();
-        enemSpeed[id] = 1;
-        enemVida[id] = 100;
+        enemSize[id] = 5 + 10*Math.random();
+        enemSpeed[id] = 15/enemSize[id];
+        enemVida[id] = vidaInimigo;
         enemAlive[id] = true;
     }
 
@@ -174,6 +175,8 @@ window.onload = function () {
             if(enemY[id] > y+25){
                 enemY[id] -= enemSpeed[id];
             }
+
+            drawEnemVida(enemVida[id], enemX[id], enemY[id]);
 
             if (onRange(x, y, playerSize, playerSize, enemX[id], enemY[id], enemSize[id], enemSize[id]) == 1){
                 enemVida[id]--;
@@ -205,10 +208,11 @@ window.onload = function () {
             }
         }
         else{
-            enemVida[id] = 100;
+            enemVida[id] = vidaInimigo;
             enemX[id] = 10;
             enemY[id] = 10;
         }
+        
         
     }
 
@@ -219,7 +223,7 @@ window.onload = function () {
         context.fill();
         
         
-        if((sprite/2)%2 == 1){
+        if(sprite < 10){
             context.fillRect(x+3, y-8, 15, 3);
             context.fillRect(x+3, y -2, 15, 3);
             context.fillRect(x+3, y + 4, 15, 3);
@@ -336,6 +340,13 @@ window.onload = function () {
         context.fillStyle = "green";
         context.fillRect(140, 10, vida*2, 25);
     }
+    function drawEnemVida(enemVida, x, y){
+        context.fillStyle = "red";
+        context.fillRect(x-10, y-20, 25, 5);
+        context.fillStyle = "green";
+        context.fillRect(x-10, y-20, enemVida/2, 5);
+
+    }
     
 
     //Funções para desenhar o personagem
@@ -380,6 +391,11 @@ window.onload = function () {
         context.fillRect(x + 10, y + 10, 15, 15);
         context.fillRect(x + 35, y + 10, 15, 15);
     }
+
+
+
+
+
 
     //Movimenta o personagem usando teclas W,A,S,D ou setas
     window.addEventListener('keydown', function (e) {
@@ -482,7 +498,6 @@ window.onload = function () {
         
         
         cloudManager();
-        enemManager();
         levelManager();
 
         drawVida(vida);
@@ -531,9 +546,8 @@ window.onload = function () {
         }
         else {
             drawMCstop(x, y);
-        }
-        
-
+        }        
+        enemManager();
         
         if(vida == 0 || levelNumber == totalLevels){
             clearInterval(jogo);
@@ -541,6 +555,9 @@ window.onload = function () {
         }
 
         sprite++;
+        if(sprite > 20){
+            sprite = 0;
+        }
 
 
     }  
